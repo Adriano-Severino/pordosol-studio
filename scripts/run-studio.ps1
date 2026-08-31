@@ -18,15 +18,14 @@ try {
 
     $env:VSCODE_DEV = "1"
     $env:NODE_ENV = "development"
-    $env:ELECTRON_ENABLE_LOGGING = "1"
 
-    $argsList = @(".", "--disable-extension=vscode.vscode-api-tests")
+    $argsList = @("-n", ".", "--disable-extension=vscode.vscode-api-tests")
     if ($args) {
         $argsList += $args
     }
 
     Start-Process -FilePath $exePath -ArgumentList $argsList
-    Write-Host "Por do Sol Studio iniciado com sucesso!" -ForegroundColor Green
+    Write-Host "Por do Sol Studio aberto na tela com sucesso!" -ForegroundColor Green
 } finally {
     Pop-Location
 }
