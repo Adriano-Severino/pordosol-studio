@@ -240,7 +240,49 @@
                     "description": "Caminho manual para o interpretador (sobrescreve descoberta automática)"
                 }
             }
-        }
+        },
+        "walkthroughs": [
+            {
+                "id": "pordosol.gettingStarted",
+                "title": "🌅 Começando com o Por do Sol Studio",
+                "description": "Guia oficial rápido para criar, compilar e depurar programas na linguagem Por do Sol.",
+                "featuredImage": "icons/pordosol.png",
+                "steps": [
+                    {
+                        "id": "pordosol.step.novoArquivo",
+                        "title": "Criar um Novo Arquivo (.pr)",
+                        "description": "Aprenda a estrutura básica de um arquivo Por do Sol e crie seu primeiro Olá Mundo.\n[Novo Arquivo](command:workbench.action.files.newUntitledFile)",
+                        "media": {
+                            "markdown": "walkthrough/novo-arquivo.md"
+                        }
+                    },
+                    {
+                        "id": "pordosol.step.debugF5",
+                        "title": "Executar e Depurar com F5",
+                        "description": "Use os recursos nativos do depurador integrado com atalhos F5, F9, F10 e F11.",
+                        "media": {
+                            "markdown": "walkthrough/executar-f5.md"
+                        }
+                    },
+                    {
+                        "id": "pordosol.step.compiladorCli",
+                        "title": "Compilar e Usar a CLI",
+                        "description": "Compile para bytecode (.pbc) com Ctrl+Shift+B e gerencie projetos via terminal.",
+                        "media": {
+                            "markdown": "walkthrough/compilador-cli.md"
+                        }
+                    },
+                    {
+                        "id": "pordosol.step.stdlib",
+                        "title": "Biblioteca Padrão Embutida",
+                        "description": "Utilize módulos de sistema, coleções e utilitários nativos prontos para uso.",
+                        "media": {
+                            "markdown": "walkthrough/stdlib.md"
+                        }
+                    }
+                ]
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

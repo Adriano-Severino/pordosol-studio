@@ -1,0 +1,30 @@
+{
+  "name": "theme-pordosol",
+  "displayName": "Tema Oficial Por do Sol",
+  "description": "Temas oficiais Dark e Light com paleta crepúsculo da linguagem Por do Sol",
+  "categories": [
+    "Themes"
+  ],
+  "version": "1.0.0",
+  "publisher": "adriano-xavier",
+  "license": "MIT",
+  "engines": {
+    "vscode": "*"
+  },
+  "contributes": {
+    "themes": [
+      {
+        "id": "Por do Sol Dark",
+        "label": "🌅 Por do Sol Dark (Oficial)",
+        "uiTheme": "vs-dark",
+        "path": "./themes/pordosol-dark.json"
+      },
+      {
+        "id": "Por do Sol Light",
+        "label": "☀️ Por do Sol Light (Oficial)",
+        "uiTheme": "vs",
+        "path": "./themes/pordosol-light.json"
+      }
+    ]
+  }
+}

@@ -1,0 +1,91 @@
+name: Release Por do Sol Studio
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build & Package Windows (x64)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.19.0
+          cache: 'npm'
+
+      - name: Configurar Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Instalar Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Sincronizar SDK e Assets da IDE
+        shell: powershell
+        run: |
+          powershell -ExecutionPolicy Bypass -File .\scripts\build-ide.ps1 -SkipSdkBuild
+
+      - name: Instalar Dependências NPM
+        shell: powershell
+        run: |
+          $env:SpectreMitigation = "false"
+          $env:CheckMSVCComponents = "false"
+          npm install
+
+      - name: Compilar Fontes da IDE
+        shell: powershell
+        run: |
+          npm run compile
+
+      - name: Empacotar Executável Standalone (win32-x64)
+        shell: powershell
+        run: |
+          $env:NODE_ENV = "production"
+          npm run gulp vscode-win32-x64
+
+      - name: Criar Zip Portátil
+        shell: powershell
+        run: |
+          $tag = if ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { "v0.1.0" }
+          Compress-Archive -Path "..\VSCode-win32-x64\*" -DestinationPath "PorDoSolStudio-$tag-win-x64-portable.zip" -Force
+
+      - name: Criar Instalador Windows (Inno Setup)
+        shell: powershell
+        run: |
+          npm run gulp vscode-win32-x64-user-setup
+
+      - name: Coletar Instalador Gerado
+        shell: powershell
+        run: |
+          $tag = if ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { "v0.1.0" }
+          $setupExe = Get-ChildItem -Path ".build\win32-x64\user-setup" -Filter "*.exe" -Recurse | Select-Object -First 1
+          if ($setupExe) {
+            Copy-Item $setupExe.FullName -Destination "PorDoSolStudio-Setup-$tag-x64.exe" -Force
+          }
+
+      - name: Criar GitHub Release e Fazer Upload dos Artefatos
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: Por do Sol Studio ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: |
+            PorDoSolStudio-*.zip
+            PorDoSolStudio-*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
