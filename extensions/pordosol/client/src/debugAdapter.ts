@@ -3,7 +3,7 @@ import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { localizarBinarios, toolchainPronta, encontrarArquivoCorrespondente, precisaRecompilar, localizarStdlib, obterDiretorioBuild } from './toolchain';
+import { localizarBinarios, toolchainPronta, encontrarArquivoCorrespondente, precisaRecompilar, localizarStdlib, obterDiretorioBuild, encontrarPontoEntrada } from './toolchain';
 
 export function registerDebugAdapter(context: vscode.ExtensionContext) {
     const factory: vscode.DebugAdapterDescriptorFactory = {
@@ -22,21 +22,35 @@ class PordosolDebugConfigurationProvider implements vscode.DebugConfigurationPro
         token?: vscode.CancellationToken
     ): vscode.ProviderResult<vscode.DebugConfiguration> {
         const editor = vscode.window.activeTextEditor;
+        const workspacePath = folder ? folder.uri.fsPath : (editor ? path.dirname(editor.document.uri.fsPath) : undefined);
+        const mainFile = workspacePath ? encontrarPontoEntrada(workspacePath) : undefined;
 
         // Se nenhuma configuração foi fornecida (F5 direto sem launch.json)
         if (!config.type && !config.request && !config.name) {
-            if (editor && (editor.document.languageId === 'pordosol' || editor.document.fileName.endsWith('.pr') || editor.document.fileName.endsWith('.pds'))) {
-                config.type = 'pordosol';
-                config.name = 'Executar Por Do Sol';
-                config.request = 'launch';
-                config.program = editor.document.uri.fsPath;
-                config.cwd = folder ? folder.uri.fsPath : path.dirname(editor.document.uri.fsPath);
+            config.type = 'pordosol';
+            config.name = 'Executar Por Do Sol';
+            config.request = 'launch';
+            config.program = (editor && (editor.document.languageId === 'pordosol' || editor.document.fileName.endsWith('.pr')))
+                ? editor.document.uri.fsPath
+                : (mainFile || '${file}');
+            config.cwd = workspacePath || process.cwd();
+        }
+
+        // Se o program for ${file} e não há editor aberto, substitui pelo ponto de entrada principal do projeto
+        if (config.program === '${file}' && !editor) {
+            if (mainFile) {
+                config.program = mainFile;
+            } else {
+                vscode.window.showErrorMessage('Nenhum arquivo aberto para executar. Abra um arquivo .pr ou configure o caminho no launch.json.');
+                return undefined;
             }
         }
 
         if (!config.program) {
             if (editor) {
                 config.program = editor.document.uri.fsPath;
+            } else if (mainFile) {
+                config.program = mainFile;
             } else {
                 vscode.window.showErrorMessage('Nenhum arquivo Por do Sol selecionado para executar.');
                 return undefined;

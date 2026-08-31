@@ -8,7 +8,7 @@ import {
 } from 'vscode-languageclient/node';
 import * as vscode from 'vscode';
 import { registerDebugAdapter } from './debugAdapter';
-import { localizarBinarios, toolchainPronta, precisaRecompilar, localizarStdlib, obterDiretorioBuild } from './toolchain';
+import { localizarBinarios, toolchainPronta, precisaRecompilar, localizarStdlib, obterDiretorioBuild, encontrarPontoEntrada } from './toolchain';
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -423,6 +423,10 @@ async function createLaunchConfiguration() {
         fs.mkdirSync(vscodeDir, { recursive: true });
     }
 
+    const entryFile = encontrarPontoEntrada(workspacePath);
+    const relEntry = entryFile ? path.relative(workspacePath, entryFile).replace(/\\/g, '/') : 'src/programa.pr';
+    const mainProgram = entryFile ? `\${workspaceFolder}/${relEntry}` : '${file}';
+
     // Configuração padrão
     const launchConfig = {
         "version": "0.2.0",
@@ -430,22 +434,23 @@ async function createLaunchConfiguration() {
             {
                 "type": "pordosol",
                 "request": "launch",
-                "name": "Executar Por Do Sol (Play)",
-                "program": "${file}",
-                "cwd": "${workspaceFolder}",
-                "interpreterPath": "",
-                "compiladorPath": "",
-                "args": []
+                "name": "Executar Projeto (Play)",
+                "program": mainProgram,
+                "cwd": "${workspaceFolder}"
             },
             {
                 "type": "pordosol",
                 "request": "launch",
-                "name": "Depurar Por Do Sol (Modo Debug)",
+                "name": "Executar Arquivo Atual",
                 "program": "${file}",
-                "cwd": "${workspaceFolder}",
-                "interpreterPath": "",
-                "compiladorPath": "",
-                "args": []
+                "cwd": "${workspaceFolder}"
+            },
+            {
+                "type": "pordosol",
+                "request": "launch",
+                "name": "Depurar Projeto (Modo Debug)",
+                "program": mainProgram,
+                "cwd": "${workspaceFolder}"
             }
         ]
     };

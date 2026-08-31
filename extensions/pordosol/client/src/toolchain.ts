@@ -275,3 +275,27 @@ export function obterDiretorioBuild(arquivoPr: string, cwd?: string): string {
     
     return path.join(programDir, 'build');
 }
+
+/**
+ * Localiza o ponto de entrada principal de um projeto Por do Sol (ex.: src/programa.pr ou src/principal.pr)
+ */
+export function encontrarPontoEntrada(rootPath: string): string | undefined {
+    const candidatos = [
+        path.join(rootPath, 'src', 'programa.pr'),
+        path.join(rootPath, 'src', 'principal.pr'),
+        path.join(rootPath, 'src', 'main.pr'),
+        path.join(rootPath, 'src', 'app.pr'),
+        path.join(rootPath, 'programa.pr'),
+        path.join(rootPath, 'principal.pr'),
+        path.join(rootPath, 'main.pr'),
+        path.join(rootPath, 'app.pr')
+    ];
+
+    for (const cand of candidatos) {
+        if (fs.existsSync(cand)) {
+            return cand;
+        }
+    }
+
+    return undefined;
+}
