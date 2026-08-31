@@ -5,8 +5,9 @@ A linguagem **Por do Sol** utiliza a extensão `.pr` para arquivos de código-fo
 ### Exemplo Básico:
 
 ```pordosol
-funcao principal() {
-    escreva("Olá, Mundo! Bem-vindo ao Por do Sol Studio 🌅");
+função vazio Principal()
+{
+    imprima("Olá, Mundo! Bem-vindo ao Por do Sol Studio 🌅");
 }
 ```
 
