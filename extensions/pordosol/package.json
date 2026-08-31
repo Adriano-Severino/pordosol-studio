@@ -144,6 +144,11 @@
         ],
         "keybindings": [
             {
+                "command": "pordosol.startDebug",
+                "key": "f5",
+                "when": "editorLangId == pordosol"
+            },
+            {
                 "command": "pordosol.runWithoutDebug",
                 "key": "ctrl+f5",
                 "when": "editorLangId == pordosol"

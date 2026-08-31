@@ -1,0 +1,119 @@
+{
+  "$schema": "vscode://schemas/color-theme",
+  "name": "☀️ Por do Sol Light (Oficial)",
+  "type": "light",
+  "colors": {
+    "activityBar.background": "#fdf6ed",
+    "activityBar.foreground": "#d9480f",
+    "activityBar.inactiveForeground": "#8c827a",
+    "activityBarBadge.background": "#e8590c",
+    "activityBarBadge.foreground": "#ffffff",
+    "sideBar.background": "#fbf2e5",
+    "sideBar.foreground": "#34302d",
+    "sideBarTitle.foreground": "#d9480f",
+    "sideBarSectionHeader.background": "#f4e4d2",
+    "sideBarSectionHeader.foreground": "#5c3d2e",
+    "editor.background": "#fffcf7",
+    "editor.foreground": "#2b2623",
+    "editorCursor.foreground": "#d9480f",
+    "editor.lineHighlightBackground": "#f8ebdb66",
+    "editor.selectionBackground": "#ffd8a888",
+    "editorGroupHeader.tabsBackground": "#f5e8d8",
+    "tab.activeBackground": "#fffcf7",
+    "tab.activeForeground": "#d9480f",
+    "tab.activeBorderTop": "#e8590c",
+    "tab.inactiveBackground": "#f5e8d8",
+    "tab.inactiveForeground": "#766d66",
+    "statusBar.background": "#f8ede0",
+    "statusBar.foreground": "#493e36",
+    "statusBar.debuggingBackground": "#d9480f",
+    "titleBar.activeBackground": "#f5e8d8",
+    "titleBar.activeForeground": "#34302d",
+    "focusBorder": "#e8590c",
+    "button.background": "#e8590c",
+    "button.foreground": "#ffffff",
+    "button.hoverBackground": "#d9480f",
+    "input.background": "#ffffff",
+    "input.foreground": "#2b2623",
+    "input.border": "#ffd8a8",
+    "badge.background": "#e8590c",
+    "badge.foreground": "#ffffff"
+  },
+  "tokenColors": [
+    {
+      "name": "Keywords & Control Flow",
+      "scope": [
+        "keyword",
+        "keyword.control",
+        "keyword.control.pordosol",
+        "storage.type.pordosol"
+      ],
+      "settings": {
+        "foreground": "#d9480f",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "Types & Classes",
+      "scope": [
+        "entity.name.type",
+        "entity.name.class",
+        "support.type",
+        "support.class",
+        "entity.name.type.pordosol"
+      ],
+      "settings": {
+        "foreground": "#b05700"
+      }
+    },
+    {
+      "name": "Functions & Methods",
+      "scope": [
+        "entity.name.function",
+        "support.function",
+        "meta.function-call",
+        "entity.name.function.pordosol"
+      ],
+      "settings": {
+        "foreground": "#0c8599"
+      }
+    },
+    {
+      "name": "Strings & Characters",
+      "scope": [
+        "string",
+        "string.quoted",
+        "string.quoted.double.pordosol",
+        "string.quoted.single.pordosol"
+      ],
+      "settings": {
+        "foreground": "#2b8a3e"
+      }
+    },
+    {
+      "name": "Numbers & Booleans",
+      "scope": [
+        "constant.numeric",
+        "constant.language",
+        "constant.language.boolean",
+        "constant.numeric.pordosol"
+      ],
+      "settings": {
+        "foreground": "#862e9c"
+      }
+    },
+    {
+      "name": "Comments",
+      "scope": [
+        "comment",
+        "comment.line",
+        "comment.block",
+        "comment.line.double-slash.pordosol"
+      ],
+      "settings": {
+        "foreground": "#868e96",
+        "fontStyle": "italic"
+      }
+    }
+  ]
+}

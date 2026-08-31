@@ -120,11 +120,7 @@ async function runWithoutDebug() {
         return;
     }
 
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-    if (!workspaceFolder) {
-        vscode.window.showErrorMessage('Nenhum workspace aberto');
-        return;
-    }
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || path.dirname(filePath);
 
     // Mostrar output channel
     const outputChannel = vscode.window.createOutputChannel('Por Do Sol Run');
@@ -253,11 +249,7 @@ async function startDebug() {
         return;
     }
 
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-    if (!workspaceFolder) {
-        vscode.window.showErrorMessage('Nenhum workspace aberto');
-        return;
-    }
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || path.dirname(filePath);
 
     // Detectar se há breakpoints no arquivo atual
     const breakpoints = vscode.debug.breakpoints;
@@ -312,11 +304,7 @@ async function compileFile() {
         return;
     }
 
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-    if (!workspaceFolder) {
-        vscode.window.showErrorMessage('Nenhum workspace aberto');
-        return;
-    }
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || path.dirname(filePath);
 
     // Mostrar output channel
     const outputChannel = vscode.window.createOutputChannel('Por Do Sol Compile');

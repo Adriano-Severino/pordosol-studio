@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -32,10 +33,12 @@ export async function localizarBinarios(workspaceFolder?: string): Promise<Diagn
 
 /**
  * Localiza um executável específico seguindo a ordem de prioridade:
- * 1. Variável de ambiente específica
- * 2. PATH do sistema
- * 3. PORDOSOL_HOME/tools
- * 4. Caminhos relativos ao workspace
+ * 1. Binários embutidos na IDE (Por do Sol Studio)
+ * 2. Diretório do usuário (~/.pordosol/tools)
+ * 3. Variável de ambiente específica
+ * 4. PATH do sistema
+ * 5. PORDOSOL_HOME/tools
+ * 6. Caminhos relativos ao workspace
  */
 async function localizarExecutavel(
     nomeBase: string, 
@@ -49,8 +52,9 @@ async function localizarExecutavel(
         const appRoot = vscode.env.appRoot;
         if (appRoot) {
             const candidatosIde = [
-                path.join(appRoot, 'bin', nomeExec),
                 path.join(appRoot, 'resources', 'bin', nomeExec),
+                path.join(appRoot, 'bin', nomeExec),
+                path.join(appRoot, '..', 'resources', 'bin', nomeExec),
                 path.join(appRoot, '..', 'bin', nomeExec),
                 path.join(appRoot, '..', 'resources', 'app', 'bin', nomeExec),
                 path.join(appRoot, '..', 'tools', nomeExec)
@@ -65,7 +69,24 @@ async function localizarExecutavel(
         // Ignora erro ao acessar appRoot
     }
 
-    // 1. Verificar variável de ambiente específica
+    // 1. Verificar pasta de instalação padrão do usuário (~/.pordosol/tools e ~/.pordosol/bin)
+    try {
+        const homeDir = os.homedir();
+        const candidatosHome = [
+            path.join(homeDir, '.pordosol', 'tools', nomeExec),
+            path.join(homeDir, '.pordosol', 'bin', nomeExec),
+            path.join(homeDir, '.pordosol', nomeExec)
+        ];
+        for (const caminho of candidatosHome) {
+            if (await arquivoExisteEEhExecutavel(caminho)) {
+                return ok(nomeBase, caminho, 'home:.pordosol');
+            }
+        }
+    } catch (e) {
+        // Ignora erro ao verificar homeDir
+    }
+
+    // 2. Verificar variável de ambiente específica
     const envPath = process.env[variavelEnv];
     if (envPath && envPath.trim()) {
         const caminho = path.resolve(envPath.trim());
@@ -74,7 +95,7 @@ async function localizarExecutavel(
         }
     }
     
-    // 2. Buscar no PATH do sistema
+    // 3. Buscar no PATH do sistema
     try {
         const whichCmd = process.platform === 'win32' ? 'where' : 'which';
         const { stdout } = await execAsync(`${whichCmd} ${nomeExec}`);
@@ -88,7 +109,7 @@ async function localizarExecutavel(
         // which/where falhou, continuar para próximos métodos
     }
     
-    // 3. Verificar PORDOSOL_HOME/tools
+    // 4. Verificar PORDOSOL_HOME/tools
     const pordosolHome = process.env.PORDOSOL_HOME;
     if (pordosolHome && pordosolHome.trim()) {
         const caminho = path.join(pordosolHome.trim(), 'tools', nomeExec);
@@ -97,11 +118,14 @@ async function localizarExecutavel(
         }
     }
     
-    // 4. Verificar caminhos relativos ao workspace
+    // 5. Verificar caminhos relativos ao workspace
     if (workspaceFolder) {
         const candidatos = [
+            path.join(workspaceFolder, 'resources', 'bin', nomeExec),
             path.join(workspaceFolder, 'compilador-portugues', 'target', 'debug', nomeExec),
             path.join(workspaceFolder, 'compilador-portugues', 'target', 'release', nomeExec),
+            path.join(workspaceFolder, 'target', 'release', nomeExec),
+            path.join(workspaceFolder, 'target', 'debug', nomeExec),
             path.join(workspaceFolder, 'lib', nomeExec),
             path.join(workspaceFolder, 'tools', nomeExec)
         ];

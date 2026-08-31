@@ -11,6 +11,43 @@ export function registerDebugAdapter(context: vscode.ExtensionContext) {
         }
     };
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('pordosol', factory));
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('pordosol', new PordosolDebugConfigurationProvider()));
+}
+
+class PordosolDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
+    resolveDebugConfiguration(
+        folder: vscode.WorkspaceFolder | undefined,
+        config: vscode.DebugConfiguration,
+        token?: vscode.CancellationToken
+    ): vscode.ProviderResult<vscode.DebugConfiguration> {
+        const editor = vscode.window.activeTextEditor;
+
+        // Se nenhuma configuração foi fornecida (F5 direto sem launch.json)
+        if (!config.type && !config.request && !config.name) {
+            if (editor && (editor.document.languageId === 'pordosol' || editor.document.fileName.endsWith('.pr') || editor.document.fileName.endsWith('.pds'))) {
+                config.type = 'pordosol';
+                config.name = 'Executar Por Do Sol';
+                config.request = 'launch';
+                config.program = editor.document.uri.fsPath;
+                config.cwd = folder ? folder.uri.fsPath : path.dirname(editor.document.uri.fsPath);
+            }
+        }
+
+        if (!config.program) {
+            if (editor) {
+                config.program = editor.document.uri.fsPath;
+            } else {
+                vscode.window.showErrorMessage('Nenhum arquivo Por do Sol selecionado para executar.');
+                return undefined;
+            }
+        }
+
+        if (!config.cwd) {
+            config.cwd = folder ? folder.uri.fsPath : path.dirname(config.program);
+        }
+
+        return config;
+    }
 }
 
 class PordosolInlineAdapter implements vscode.DebugAdapter, vscode.Disposable {
