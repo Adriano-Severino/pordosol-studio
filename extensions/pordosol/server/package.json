@@ -1,0 +1,12 @@
+{
+  "name": "pordosol-language-server",
+  "version": "1.0.0",
+  "dependencies": {
+    "vscode-languageserver": "^8.1.0",
+    "vscode-languageserver-textdocument": "^1.0.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5.8.2"
+  }
+}

@@ -1,0 +1,260 @@
+{
+    "name": "pordosol-language-server",
+    "displayName": "🌅 Por Do Sol - Complete Language Support",
+    "description": "Suporte completo para linguagem Por Do Sol: syntax highlighting, LSP, autocompletar e validação",
+    "version": "2.0.2",
+    "icon": "icons/pordosol.png",
+    "publisher": "adriano-xavier",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Adriano-Severino/pordosol-language-server.git"
+    },
+    "engines": {
+        "vscode": "^1.74.0"
+    },
+    "categories": [
+        "Programming Languages",
+        "Linters",
+        "Snippets"
+    ],
+    "keywords": [
+        "português",
+        "brazilian",
+        "oop",
+        "ownership",
+        "interpolation"
+    ],
+    "activationEvents": [
+        "onLanguage:pordosol",
+        "onDebug:pordosol",
+        "onCommand:pordosol.startDebug",
+        "onCommand:pordosol.compile",
+        "onCommand:pordosol.createLaunchConfig"
+    ],
+    "main": "./client/out/extension.js",
+    "contributes": {
+        "languages": [
+            {
+                "id": "pordosol",
+                "aliases": [
+                    "Por Do Sol",
+                    "pordosol",
+                    "PorDoSol"
+                ],
+                "extensions": [
+                    ".pr",
+                    ".pds"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "pordosol",
+                "scopeName": "source.pordosol",
+                "path": "./syntaxes/pordosol.tmLanguage.json"
+            }
+        ],
+        "debuggers": [
+            {
+                "type": "pordosol",
+                "label": "Por Do Sol (Interpretador)",
+                "languages": [
+                    "pordosol"
+                ],
+                "configurationAttributes": {
+                    "launch": {
+                        "required": [
+                            "program"
+                        ],
+                        "properties": {
+                            "program": {
+                                "type": "string",
+                                "description": "Caminho para o arquivo .pr ou .pbc a executar",
+                                "default": "${file}"
+                            },
+                            "cwd": {
+                                "type": "string",
+                                "description": "Diretório de trabalho",
+                                "default": "${workspaceFolder}"
+                            },
+                            "interpreterPath": {
+                                "type": "string",
+                                "description": "Caminho do interpretador (interpretador.exe) - deixe vazio para descoberta automática",
+                                "default": ""
+                            },
+                            "compiladorPath": {
+                                "type": "string",
+                                "description": "Caminho do compilador (compilador.exe) - deixe vazio para descoberta automática",
+                                "default": ""
+                            },
+                            "args": {
+                                "type": "array",
+                                "description": "Argumentos adicionais",
+                                "default": []
+                            }
+                        }
+                    }
+                },
+                "initialConfigurations": [
+                    {
+                        "type": "pordosol",
+                        "request": "launch",
+                        "name": "Executar Por Do Sol (Play)",
+                        "program": "${file}",
+                        "cwd": "${workspaceFolder}",
+                        "interpreterPath": "",
+                        "compiladorPath": "",
+                        "args": []
+                    },
+                    {
+                        "type": "pordosol",
+                        "request": "launch",
+                        "name": "Depurar Por Do Sol (Modo Debug)",
+                        "program": "${file}",
+                        "cwd": "${workspaceFolder}",
+                        "interpreterPath": "",
+                        "compiladorPath": "",
+                        "args": []
+                    }
+                ]
+            }
+        ],
+        "commands": [
+            {
+                "command": "pordosol.runWithoutDebug",
+                "title": "Executar Por Do Sol sem Debug",
+                "category": "Por Do Sol"
+            },
+            {
+                "command": "pordosol.startDebug",
+                "title": "Iniciar Debug Por Do Sol",
+                "category": "Por Do Sol"
+            },
+            {
+                "command": "pordosol.compile",
+                "title": "Compilar Arquivo Por Do Sol",
+                "category": "Por Do Sol"
+            },
+            {
+                "command": "pordosol.createLaunchConfig",
+                "title": "Criar Configuração de Debug",
+                "category": "Por Do Sol"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "pordosol.runWithoutDebug",
+                "key": "ctrl+f5",
+                "when": "editorLangId == pordosol"
+            },
+            {
+                "command": "workbench.action.debug.stop",
+                "key": "shift+f5",
+                "when": "debugState == 'running' && editorLangId == pordosol"
+            },
+            {
+                "command": "editor.debug.action.toggleBreakpoint",
+                "key": "f9",
+                "when": "editorLangId == pordosol"
+            },
+            {
+                "command": "workbench.action.debug.stepOver",
+                "key": "f10",
+                "when": "debugState == 'running' && editorLangId == pordosol"
+            },
+            {
+                "command": "workbench.action.debug.stepInto",
+                "key": "f11",
+                "when": "debugState == 'running' && editorLangId == pordosol"
+            },
+            {
+                "command": "workbench.action.debug.stepOut",
+                "key": "shift+f11",
+                "when": "debugState == 'running' && editorLangId == pordosol"
+            },
+            {
+                "command": "pordosol.compile",
+                "key": "ctrl+shift+b",
+                "when": "editorLangId == pordosol"
+            },
+            {
+                "command": "pordosol.runWithoutDebug",
+                "key": "ctrl+shift+r",
+                "when": "editorLangId == pordosol"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "Por Do Sol Language Server",
+            "properties": {
+                "pordosolLanguageServer.maxNumberOfProblems": {
+                    "scope": "resource",
+                    "type": "number",
+                    "default": 100,
+                    "description": "Máximo número de problemas reportados"
+                },
+                "pordosolLanguageServer.enableStrictMode": {
+                    "scope": "resource",
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Habilitar modo estrito de validação"
+                },
+                "pordosolLanguageServer.enableOwnershipAnalysis": {
+                    "scope": "resource",
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Habilitar análise de ownership"
+                },
+                "pordosolLanguageServer.stdlibPaths": {
+                    "scope": "resource",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": [],
+                    "description": "Caminhos para bibliotecas .pbl da biblioteca padrão (Biblioteca Por do Sol)"
+                },
+                "pordosolLanguageServer.formatOnSave": {
+                    "scope": "resource",
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Formatar código automaticamente ao salvar"
+                },
+                "pordosolLanguageServer.tabSize": {
+                    "scope": "resource",
+                    "type": "number",
+                    "default": 4,
+                    "description": "Tamanho da tabulação para formatação"
+                },
+                "pordosol.compiladorPath": {
+                    "scope": "machine-overridable",
+                    "type": "string",
+                    "default": "",
+                    "description": "Caminho manual para o compilador (sobrescreve descoberta automática)"
+                },
+                "pordosol.interpretadorPath": {
+                    "scope": "machine-overridable",
+                    "type": "string",
+                    "default": "",
+                    "description": "Caminho manual para o interpretador (sobrescreve descoberta automática)"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "npm run clean && npm run build",
+        "build": "tsc -b --force",
+        "watch": "tsc -b -w",
+        "clean": "npx rimraf client/out server/out out",
+        "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+        "package": "vsce package"
+    },
+    "devDependencies": {
+        "@types/node": "^22.15.30",
+        "rimraf": "^6.0.1",
+        "typescript": "^5.8.3",
+        "@vscode/vsce": "^2.15.0"
+    }
+}

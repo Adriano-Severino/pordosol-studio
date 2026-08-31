@@ -1,0 +1,257 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "Por Do Sol",
+    "scopeName": "source.pordosol",
+    "patterns": [
+        {
+            "include": "#comments"
+        },
+        {
+            "include": "#keywords"
+        },
+        {
+            "include": "#types"
+        },
+        {
+            "include": "#operators"
+        },
+        {
+            "include": "#strings"
+        },
+        {
+            "include": "#interpolated-strings"
+        },
+        {
+            "include": "#numbers"
+        },
+        {
+            "include": "#classes"
+        },
+        {
+            "include": "#functions"
+        },
+        {
+            "include": "#namespaces"
+        },
+        {
+            "include": "#members"
+        },
+        {
+            "include": "#attributes"
+        },
+        {
+            "include": "#generics"
+        }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [
+                {
+                    "name": "comment.line.double-slash.pordosol",
+                    "match": "//.*$"
+                },
+                {
+                    "name": "comment.block.pordosol",
+                    "begin": "/\\*",
+                    "end": "\\*/"
+                }
+            ]
+        },
+        "keywords": {
+            "patterns": [
+                {
+                    "name": "keyword.control.cs",
+                    "match": "\\b(se|então|senão|enquanto|para|função|retorne|imprima|novo|nova|este)\\b"
+                },
+                {
+                    "name": "storage.type.class.cs",
+                    "match": "\\b(classe|interface|enumeração)\\b"
+                },
+                {
+                    "name": "keyword.other.using.cs",
+                    "match": "\\b(espaco|usando|var)\\b"
+                },
+                {
+                    "name": "storage.modifier.cs",
+                    "match": "\\b(público|publico|privado|protegido|estática|sobrescreve|redefinível|abstrata)\\b"
+                },
+                {
+                    "name": "keyword.other.base.cs",
+                    "match": "\\b(base)\\b"
+                },
+                {
+                    "name": "keyword.other.accessor.cs",
+                    "match": "\\b(obter|definir)\\b"
+                },
+                {
+                    "name": "keyword.other.constructor.cs",
+                    "match": "\\b(construtor)\\b"
+                },
+                {
+                    "name": "keyword.other.async.cs",
+                    "match": "\\b(assíncrono|aguarde)\\b"
+                },
+                {
+                    "name": "storage.modifier.extern.cs",
+                    "match": "\\b(externo)\\b"
+                },
+                {
+                    "name": "constant.language.boolean.cs",
+                    "match": "\\b(verdadeiro|falso)\\b"
+                }
+            ]
+        },
+        "types": {
+            "patterns": [
+                {
+                    "name": "storage.type.cs",
+                    "match": "\\b(inteiro|texto|booleano|vazio|duplo|flutuante|decimal|objeto)\\b"
+                }
+            ]
+        },
+        "operators": {
+            "patterns": [
+                {
+                    "name": "keyword.operator.assignment.cs",
+                    "match": "="
+                },
+                {
+                    "name": "keyword.operator.comparison.cs",
+                    "match": "(==|!=|<=|>=|<|>)"
+                },
+                {
+                    "name": "keyword.operator.arithmetic.cs",
+                    "match": "(\\+|\\-|\\*|/|%)"
+                },
+                {
+                    "name": "keyword.operator.logical.cs",
+                    "match": "(&&|\\|\\||!)"
+                },
+                {
+                    "name": "punctuation.accessor.cs",
+                    "match": "\\."
+                },
+                {
+                    "name": "punctuation.separator.inheritance.cs",
+                    "match": ":"
+                },
+                {
+                    "name": "storage.type.function.arrow.cs",
+                    "match": "=>"
+                }
+            ]
+        },
+        "strings": {
+            "name": "string.quoted.double.cs",
+            "begin": "\"",
+            "end": "\"",
+            "patterns": [
+                {
+                    "name": "constant.character.escape.cs",
+                    "match": "\\\\."
+                }
+            ]
+        },
+        "interpolated-strings": {
+            "name": "string.interpolated.cs",
+            "begin": "\\$\"",
+            "end": "\"",
+            "patterns": [
+                {
+                    "name": "meta.interpolation.cs",
+                    "begin": "\\{",
+                    "end": "\\}",
+                    "patterns": [
+                        {
+                            "include": "$self"
+                        }
+                    ]
+                },
+                {
+                    "name": "constant.character.escape.cs",
+                    "match": "\\\\."
+                }
+            ]
+        },
+        "numbers": {
+            "patterns": [
+                {
+                    "name": "constant.numeric.decimal.cs",
+                    "match": "\\b[0-9]+\\.[0-9]+[mM]\\b"
+                },
+                {
+                    "name": "constant.numeric.float.cs",
+                    "match": "\\b[0-9]+\\.[0-9]+[fF]\\b"
+                },
+                {
+                    "name": "constant.numeric.double.cs",
+                    "match": "\\b((?:[0-9]+\\.[0-9]*|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?|[0-9]+\\.[0-9]*[eE][+-]?[0-9]+)\\b"
+                },
+                {
+                    "name": "constant.numeric.integer.cs",
+                    "match": "\\b[0-9]+\\b"
+                }
+            ]
+        },
+        "classes": {
+            "patterns": [
+                {
+                    "name": "entity.name.type.cs",
+                    "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+                }
+            ]
+        },
+        "functions": {
+            "patterns": [
+                {
+                    "name": "entity.name.function.cs",
+                    "match": "\\b[A-Za-zÀ-ÿ_][A-Za-zÀ-ÿ0-9_]*(?=\\s*\\())"
+                }
+            ]
+        },
+        "namespaces": {
+            "patterns": [
+                {
+                    "name": "entity.name.namespace.cs",
+                    "match": "(?<=espaco\\s+)\\b[A-Z][a-zA-Z0-9_]*\\b"
+                }
+            ]
+        },
+        "members": {
+            "patterns": [
+                {
+                    "name": "variable.other.member.cs",
+                    "match": "(?<=\\.)([A-Za-zÀ-ÿ_][A-Za-zÀ-ÿ0-9_]*)"
+                },
+                {
+                    "name": "entity.name.function.constructor.cs",
+                    "match": "(?<=construtor\\s)\\b[A-Z][a-zA-Z0-9_]*\\b"
+                }
+            ]
+        },
+        "attributes": {
+            "patterns": [
+                {
+                    "name": "meta.attribute.cs",
+                    "match": "\\[\\w+"
+                }
+            ]
+        },
+        "generics": {
+            "patterns": [
+                {
+                    "name": "storage.type.generic.cs",
+                    "match": "<[A-Za-zÀ-ÿ_][A-Za-zÀ-ÿ0-9_,\\s]*>"
+                }
+            ]
+        },
+        "literals": {
+            "patterns": [
+                {
+                    "name": "constant.language.null.cs",
+                    "match": "\\bnulo\\b"
+                }
+            ]
+        }
+    }
+}
