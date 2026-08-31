@@ -2,7 +2,8 @@ import * as vscode from 'vscode';
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { localizarBinarios, toolchainPronta, encontrarArquivoCorrespondente, precisaRecompilar } from './toolchain';
+import * as os from 'os';
+import { localizarBinarios, toolchainPronta, encontrarArquivoCorrespondente, precisaRecompilar, localizarStdlib, obterDiretorioBuild } from './toolchain';
 
 export function registerDebugAdapter(context: vscode.ExtensionContext) {
     const factory: vscode.DebugAdapterDescriptorFactory = {
@@ -134,10 +135,9 @@ class PordosolInlineAdapter implements vscode.DebugAdapter, vscode.Disposable {
             // Verificar se precisa compilar (se o programa for .pr)
             let finalProgram = program;
             if (program.endsWith('.pr')) {
-                // Update to use build directory
-                const programDir = path.dirname(program);
+                // Update to use root project build directory
+                const buildDir = obterDiretorioBuild(program, cwd);
                 const programName = path.basename(program, '.pr');
-                const buildDir = path.join(programDir, 'build');
                 const pbcPath = path.join(buildDir, `${programName}.pbc`);
                 
                 // Create build directory if it doesn't exist
@@ -269,9 +269,8 @@ class PordosolInlineAdapter implements vscode.DebugAdapter, vscode.Disposable {
 
             if (src.endsWith('.pr')) {
                 // Mapear .pr para .pbc correspondente no diretório build
-                const programDir = path.dirname(src);
+                const buildDir = obterDiretorioBuild(src);
                 const programName = path.basename(src, '.pr');
-                const buildDir = path.join(programDir, 'build');
                 const pbcPath = path.join(buildDir, `${programName}.pbc`);
                 
                 // Verificar se o .pbc existe
@@ -414,20 +413,33 @@ class PordosolInlineAdapter implements vscode.DebugAdapter, vscode.Disposable {
      * Compila um arquivo .pr para .pbc usando o compilador descoberto
      */
     private async compilarArquivo(arquivoPr: string, compiladorPath: string, cwd?: string, buildDir?: string): Promise<void> {
+        const workingDir = cwd || path.dirname(arquivoPr);
+        const stdlibPath = await localizarStdlib(workingDir);
+
         return new Promise((resolve, reject) => {
-            // Use the original working directory for compilation, but pass --output-dir flag
-            const workingDir = cwd || path.dirname(arquivoPr);
             const args = ['--target=bytecode'];
             
-            // Add --output-dir flag if buildDir is specified
+            // Adicionar flag --output-dir para salvar no diretório build correto
             if (buildDir) {
                 args.push(`--output-dir=${buildDir}`);
             }
+
+            // Adicionar flag --stdlib-src-path se a biblioteca padrão for encontrada
+            if (stdlibPath) {
+                args.push(`--stdlib-src-path=${stdlibPath}`);
+            }
             
             args.push(arquivoPr);
+
+            const env: NodeJS.ProcessEnv = {
+                ...process.env,
+                PORDOSOL_HOME: process.env.PORDOSOL_HOME || path.join(os.homedir(), '.pordosol'),
+                PORTUGOL_STDLIB_PATH: stdlibPath || (process.env.PORDOSOL_HOME ? path.join(process.env.PORDOSOL_HOME, 'tools', 'stdlib') : path.join(os.homedir(), '.pordosol', 'tools', 'stdlib'))
+            };
             
             const proc = spawn(compiladorPath, args, { 
                 cwd: workingDir,
+                env,
                 stdio: 'pipe'
             });
             

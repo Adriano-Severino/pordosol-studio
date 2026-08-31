@@ -228,3 +228,50 @@ export async function precisaRecompilar(arquivoPr: string, arquivoPbc: string): 
         return true;
     }
 }
+
+/**
+ * Localiza o diretório raiz da biblioteca padrão (sistema-padrão / stdlib)
+ */
+export async function localizarStdlib(workspaceFolder?: string): Promise<string | undefined> {
+    const homeDir = os.homedir();
+    const appRoot = vscode.env.appRoot;
+    
+    const candidatos = [
+        path.join(homeDir, '.pordosol', 'tools', 'stdlib'),
+        path.join(homeDir, '.pordosol', 'stdlib'),
+        process.env.PORDOSOL_HOME ? path.join(process.env.PORDOSOL_HOME, 'tools', 'stdlib') : '',
+        process.env.PORDOSOL_HOME ? path.join(process.env.PORDOSOL_HOME, 'stdlib') : '',
+        process.env.PORTUGOL_STDLIB_PATH || '',
+        appRoot ? path.join(appRoot, 'resources', 'bin', 'stdlib') : '',
+        appRoot ? path.join(appRoot, '..', 'resources', 'bin', 'stdlib') : '',
+        workspaceFolder ? path.join(workspaceFolder, 'sistema-padrao') : '',
+        workspaceFolder ? path.join(workspaceFolder, '..', 'sistema-padrao') : ''
+    ].filter(Boolean);
+
+    for (const cand of candidatos) {
+        if (cand && fs.existsSync(cand)) {
+            return cand;
+        }
+    }
+
+    return undefined;
+}
+
+/**
+ * Calcula o diretório build correto na raiz do projeto (evita criar src/build duplicado)
+ */
+export function obterDiretorioBuild(arquivoPr: string, cwd?: string): string {
+    const workspaceRoot = cwd || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    
+    if (workspaceRoot) {
+        return path.join(workspaceRoot, 'build');
+    }
+    
+    const programDir = path.dirname(arquivoPr);
+    // Se o arquivo estiver dentro de uma pasta 'src', o build deve ficar no diretório pai
+    if (path.basename(programDir).toLowerCase() === 'src') {
+        return path.join(path.dirname(programDir), 'build');
+    }
+    
+    return path.join(programDir, 'build');
+}

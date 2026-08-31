@@ -8,9 +8,10 @@ import {
 } from 'vscode-languageclient/node';
 import * as vscode from 'vscode';
 import { registerDebugAdapter } from './debugAdapter';
-import { localizarBinarios, toolchainPronta, precisaRecompilar } from './toolchain';
+import { localizarBinarios, toolchainPronta, precisaRecompilar, localizarStdlib, obterDiretorioBuild } from './toolchain';
 import { spawn } from 'child_process';
 import * as fs from 'fs';
+import * as os from 'os';
 
 let client: LanguageClient;
 
@@ -144,12 +145,14 @@ async function runWithoutDebug() {
         outputChannel.appendLine(`[Por Do Sol] Interpretador: ${binarios.interpretador.caminho}`);
 
         // Verificar se precisa compilar
-        const pbcPath = filePath.replace(/\.pr$/, '.pbc');
+        const buildDir = obterDiretorioBuild(filePath, workspaceFolder);
+        const programName = path.basename(filePath, '.pr');
+        const pbcPath = path.join(buildDir, `${programName}.pbc`);
         const needsCompile = !fs.existsSync(pbcPath) || await precisaRecompilar(filePath, pbcPath);
 
         if (needsCompile) {
             outputChannel.appendLine('[Por Do Sol] Compilando...');
-            await compilarArquivo(filePath, binarios.compilador.caminho, workspaceFolder, outputChannel);
+            await compilarArquivo(filePath, binarios.compilador.caminho, workspaceFolder, outputChannel, buildDir);
         } else {
             outputChannel.appendLine('[Por Do Sol] Bytecode atualizado, pulando compilação');
         }
@@ -172,11 +175,29 @@ async function compilarArquivo(
     arquivoPr: string,
     compiladorPath: string,
     workspaceFolder: string,
-    outputChannel: vscode.OutputChannel
+    outputChannel: vscode.OutputChannel,
+    buildDir?: string
 ): Promise<void> {
+    const stdlibPath = await localizarStdlib(workspaceFolder);
+    const args = ['--target=bytecode'];
+    if (buildDir) {
+        args.push(`--output-dir=${buildDir}`);
+    }
+    if (stdlibPath) {
+        args.push(`--stdlib-src-path=${stdlibPath}`);
+    }
+    args.push(arquivoPr);
+
+    const env: NodeJS.ProcessEnv = {
+        ...process.env,
+        PORDOSOL_HOME: process.env.PORDOSOL_HOME || path.join(os.homedir(), '.pordosol'),
+        PORTUGOL_STDLIB_PATH: stdlibPath || (process.env.PORDOSOL_HOME ? path.join(process.env.PORDOSOL_HOME, 'tools', 'stdlib') : path.join(os.homedir(), '.pordosol', 'tools', 'stdlib'))
+    };
+
     return new Promise((resolve, reject) => {
-        const proc = spawn(compiladorPath, ['--target=bytecode', arquivoPr], {
+        const proc = spawn(compiladorPath, args, {
             cwd: workspaceFolder,
+            env,
             stdio: 'pipe'
         });
 
@@ -326,7 +347,8 @@ async function compileFile() {
         outputChannel.appendLine(`[Por Do Sol] Compilador: ${binarios.compilador.caminho}`);
 
         // Compilar
-        await compilarArquivo(filePath, binarios.compilador.caminho, workspaceFolder, outputChannel);
+        const buildDir = obterDiretorioBuild(filePath, workspaceFolder);
+        await compilarArquivo(filePath, binarios.compilador.caminho, workspaceFolder, outputChannel, buildDir);
 
         outputChannel.appendLine('[Por Do Sol] Compilação concluída com sucesso');
         vscode.window.showInformationMessage('Compilação concluída com sucesso');
