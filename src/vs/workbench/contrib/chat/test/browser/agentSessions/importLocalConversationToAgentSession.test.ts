@@ -7,7 +7,8 @@ import assert from 'assert';
 import { MarkdownString } from '../../../../../../base/common/htmlContent.js';
 import { URI } from '../../../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
-import { getTurnError, ResponsePartKind, ToolResultContentType, TurnState, type ResponsePart, type ToolCallCompletedState } from '../../../../../../platform/agentHost/common/state/sessionState.js';
+import { getTurnError, ResponsePartKind, ToolCallStatus, ToolResultContentType, TurnState, type ResponsePart, type ToolCallCompletedState } from '../../../../../../platform/agentHost/common/state/sessionState.js';
+import type { IChatToolInvocationSerialized } from '../../../common/chatService/chatService.js';
 import type { IChatProgressResponseContent, IChatModel, IChatRequestModel, IChatResponseModel } from '../../../common/model/chatModel.js';
 import { importedTurnsFromChatModel } from '../../../browser/agentSessions/agentHost/importLocalConversationToAgentSession.js';
 
@@ -84,6 +85,21 @@ suite('importedTurnsFromChatModel', () => {
 			}),
 		}));
 	}
+
+	test('preserves local reasoning timing when importing into an agent session', () => {
+		const turns = importedTurnsFromChatModel(model([request('q', response([
+			{ kind: 'thinking', value: 'Measured', reasoningStartedAt: 1000, reasoningDurationMs: 45_000 },
+			{ kind: 'thinking', value: 'Immediate', reasoningDurationMs: 0 },
+			{ kind: 'thinking', value: 'Older history' },
+		]))]));
+
+		assert.deepStrictEqual(turns[0].responseParts.flatMap(part => part.kind === ResponsePartKind.Reasoning
+			? [{ content: part.content, startedAt: part.startedAt, duration: part.duration }] : []), [
+			{ content: 'Measured', startedAt: '1970-01-01T00:00:01.000Z', duration: 45_000 },
+			{ content: 'Immediate', startedAt: undefined, duration: 0 },
+			{ content: 'Older history', startedAt: undefined, duration: undefined },
+		]);
+	});
 
 	test('maps markdown, reasoning and inline references in stream order', () => {
 		const result = project(model([request('q', response([
@@ -233,5 +249,44 @@ suite('importedTurnsFromChatModel', () => {
 			error: undefined,
 			parts: [{ kind: ResponsePartKind.ToolCall, subagent: { agentName: 'explore', description: 'Explores the codebase' } }],
 		}]);
+	});
+
+	test('imports phase summaries and terminal outcomes without inventing child subagents', () => {
+		const phase: IChatToolInvocationSerialized = {
+			kind: 'toolInvocationSerialized',
+			presentation: undefined,
+			toolId: 'hydrafusion_phase',
+			toolCallId: 'fusion:phase-1',
+			invocationMessage: 'Main pass',
+			originMessage: undefined,
+			pastTenseMessage: 'Main pass completed',
+			isConfirmed: undefined,
+			isComplete: true,
+			source: undefined,
+			toolSpecificData: {
+				kind: 'subagent',
+				presentation: 'phase',
+				phaseStatus: 'succeeded',
+				description: 'Main pass',
+				result: 'Main pass completed',
+				isChatAvailable: false,
+			},
+		};
+		assert.deepStrictEqual((['succeeded', 'failed', 'cancelled'] as const).map(phaseStatus => {
+			const toolSpecificData: IChatToolInvocationSerialized['toolSpecificData'] = {
+				kind: 'subagent', presentation: 'phase',
+				phaseStatus,
+				description: 'Main pass', result: `Main pass ${phaseStatus}`,
+			};
+			const turns = importedTurnsFromChatModel(model([request('q', response([{ ...phase, toolSpecificData }]))]));
+			const part = turns[0].responseParts[0];
+			return part.kind === ResponsePartKind.ToolCall && part.toolCall.status === ToolCallStatus.Completed ? {
+				success: part.toolCall.success, error: part.toolCall.error, content: part.toolCall.content,
+			} : undefined;
+		}), [
+			{ success: true, error: undefined, content: [{ type: ToolResultContentType.Text, text: 'Main pass succeeded' }] },
+			{ success: false, error: { message: 'Main pass failed' }, content: [{ type: ToolResultContentType.Text, text: 'Main pass failed' }] },
+			{ success: false, error: { message: 'Main pass cancelled', code: 'cancelled' }, content: [{ type: ToolResultContentType.Text, text: 'Main pass cancelled' }] },
+		]);
 	});
 });
